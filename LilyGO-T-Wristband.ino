@@ -1,3 +1,5 @@
+#include <TFT_eSPI.h>
+
 
 #include <pcf8563.h>
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
@@ -364,11 +366,16 @@ void setup(void)
     }
 }
 
-String getVoltage()
+uint16_t getVoltage()
 {
     uint16_t v = analogRead(BATT_ADC_PIN);
     float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    return String(battery_voltage) + "V";
+    return battery_voltage;
+}
+
+String getBatteryPercent()
+{
+  return String(floor((getVoltage() - 3.4) / 0.8 * 100)) + "%";
 }
 
 void RTC_Show()
@@ -388,7 +395,7 @@ void RTC_Show()
         }
 
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
-        tft.drawCentreString(getVoltage(), 120, 60, 1); // Next size up font 2
+        tft.drawCentreString(getBatteryPercent(), 120, 60, 1); // Next size up font 2
 
 
         // Update digital time
@@ -496,7 +503,7 @@ void loop()
     case 2:
         tft.setTextColor(TFT_GREEN, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
-        tft.drawString("Press again to wake up",  tft.width() / 2, tft.height() / 2 );
+        tft.drawString("Entering sleep mode ...",  tft.width() / 2, tft.height() / 2 );
         IMU.setSleepEnabled(true);
         Serial.println("Go to Sleep");
         delay(3000);
@@ -509,6 +516,3 @@ void loop()
         break;
     }
 }
-
-
-
